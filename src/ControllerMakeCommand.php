@@ -67,9 +67,9 @@ class ControllerMakeCommand extends _ControllerMakeCommand {
         $stubPathParts = explode(DIRECTORY_SEPARATOR, $stub);
         $stub = array_pop($stubPathParts);
 
-        $userStub = resource_path('peterdekok/laravel-make-softdelete/stubs/controller/' . $stub);
+        $userStub = resource_path('peterdekok/laravel-make-softdelete/stubs/' . strtolower($this->type) . '/' . $stub);
 
-        $vendorStub = __DIR__ . '/../stubs/controller/' . $stub;
+        $vendorStub = __DIR__ . '/../stubs/' . strtolower($this->type) . '/' . $stub;
 
         if (file_exists($userStub))
             return $userStub;
@@ -109,13 +109,13 @@ class ControllerMakeCommand extends _ControllerMakeCommand {
         $relativeNamespace = str_replace($defaultNamespace, '', $this->getNamespace($name));
 
         $replace = [
-            "DummyControllerBaseClass" => "Controller",
+            "DummyControllerBaseClass" => $this->type,
         ];
 
         if (trim($relativeNamespace, '\\') === '') {
             $replace["use DummyFQCNControllerBaseClass;\n"] = '';
         } else {
-            $replace["DummyFQCNControllerBaseClass"] = $defaultNamespace . "\Controller";
+            $replace["DummyFQCNControllerBaseClass"] = $defaultNamespace . '\\' . $this->type;
         }
 
         return $replace;
@@ -135,12 +135,17 @@ class ControllerMakeCommand extends _ControllerMakeCommand {
         $customReplace = require $customReplacementFile;
 
         if (!is_array($customReplace)) {
-            $this->error('Custom replacements do not have correct format, ignoring!');
+            $this->error('Custom replacements do not have correct format. Ignoring!');
 
             return $replace;
         }
 
-        foreach ($customReplace as $dummy => $with) {
+        if (!array_key_exists(strtolower($this->type), $customReplace)) {
+            $this->warn('Custom replacements do not have ' . strtolower($this->type) . ' entries. Ignoring!');
+            return $replace;
+        }
+
+        foreach ($customReplace[strtolower($this->type)] as $dummy => $with) {
             if (is_callable($with))
                 $with = call_user_func_array($with, []);
 
@@ -158,7 +163,7 @@ class ControllerMakeCommand extends _ControllerMakeCommand {
     protected function getOptions () {
         $options = parent::getOptions();
 
-        $options[] = ['softdelete', null, InputOption::VALUE_NONE, 'Include the restore method and change destroy to delete in the controller. If a Model is created, this model will include the SoftDelete trait (TODO)'];
+        $options[] = ['softdelete', null, InputOption::VALUE_NONE, 'Include soft delete paradigm in the controller.'];
 
         return $options;
     }

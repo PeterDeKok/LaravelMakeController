@@ -21,8 +21,10 @@
  */
 
 return [
-    'DummyStringInTheStub1' => 'ReplacedWithThisString',
-    'DummyStringInTheStub2' => function () {
-        return 'ReplacedWithReturnValueOfCallback';
-    },
+    'controller' => [
+        'DummyStringInTheStub1' => 'ReplacedWithThisString',
+        'DummyStringInTheStub2' => function () {
+            return 'ReplacedWithReturnValueOfCallback';
+        },
+    ],
 ];
