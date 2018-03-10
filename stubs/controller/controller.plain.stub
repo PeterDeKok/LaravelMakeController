@@ -1,0 +1,10 @@
+<?php
+
+namespace DummyNamespace;
+
+use DummyFQCNControllerBaseClass;
+
+class DummyClass extends DummyControllerBaseClass {
+
+    //
+}

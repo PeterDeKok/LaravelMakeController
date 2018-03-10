@@ -1,0 +1,27 @@
+{
+    "name": "peterdekok/laravel-make-softdelete",
+    "description": "Extends the Laravel generator commands to allow user overwrites and soft delete functionality",
+    "require": {
+        "laravel/framework": "~5.6.8"
+    },
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Peter de Kok",
+            "email": "info@peterdekok.nl"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "PeterDeKok\\LaravelMakeSoftDelete\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PeterDeKok\\LaravelMakeSoftDelete\\MakeSoftDeleteServiceProvider"
+            ]
+        }
+    }
+}
