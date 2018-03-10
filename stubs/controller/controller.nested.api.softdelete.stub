@@ -2,12 +2,12 @@
 
 namespace DummyNamespace;
 
-use DummyFQCNControllerBaseClass;
+use DummyFQCNTypeBaseClass\DummyTypeBaseClass;
 use DummyFullModelClass;
 use Illuminate\Http\Request;
 use ParentDummyFullModelClass;
 
-class DummyClass extends DummyControllerBaseClass {
+class DummyClass extends DummyTypeBaseClass {
 
     /**
      * Display a listing of the resource.

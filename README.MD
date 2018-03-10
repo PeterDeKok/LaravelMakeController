@@ -41,10 +41,13 @@ Make sure it is added **after** the Laravel Framework Service Providers. If this
 For the full functionality of this package, some files need to be published.
 
 The stubs can be changed by running: \
-`la5 vendor:publish --provider=PeterDeKok\\LaravelMakeSoftDelete\\MakeSoftDeleteServiceProvider --tag=stubs`
+`php artisan vendor:publish --provider=PeterDeKok\\LaravelMakeSoftDelete\\MakeSoftDeleteServiceProvider --tag=stubs`
 
 Custom replacements can be added by running: \
-`la5 vendor:publish --provider=PeterDeKok\\LaravelMakeSoftDelete\\MakeSoftDeleteServiceProvider --tag=replacements`
+`php artisan vendor:publish --provider=PeterDeKok\\LaravelMakeSoftDelete\\MakeSoftDeleteServiceProvider --tag=replacements`
+
+Custom (default) Model location: \
+`php artisan vendor:publish --provider=PeterDeKok\\LaravelMakeSoftDelete\\MakeSoftDeleteServiceProvider --tag=config`
 
 A combination of both can be very powerful.
 

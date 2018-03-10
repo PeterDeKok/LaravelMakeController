@@ -40,6 +40,7 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
      */
     protected $devCommands = [
         ControllerMakeCommand::class => 'command.controller.make',
+        ModelMakeCommand::class      => 'command.model.make',
     ];
 
     /**
@@ -49,11 +50,15 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
      */
     public function boot () {
         $this->publishes([
-            __DIR__.'/../stubs' => resource_path('peterdekok/laravel-make-softdelete/stubs'),
+            __DIR__ . '/../config/laravel-make-softdelete.php' => config_path('laravel-make-softdelete.php'),
+        ], 'config');
+
+        $this->publishes([
+            __DIR__ . '/../stubs' => resource_path('peterdekok/laravel-make-softdelete/stubs'),
         ], 'stubs');
 
         $this->publishes([
-            __DIR__.'/../replacements.php' => resource_path('peterdekok/laravel-make-softdelete/replacements.php'),
+            __DIR__ . '/../replacements.php' => resource_path('peterdekok/laravel-make-softdelete/replacements.php'),
         ], 'replacements');
     }
 
@@ -63,11 +68,16 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
      * @return void
      */
     public function register () {
+        $this->mergeConfigFrom(__DIR__.'/../config/laravel-make-softdelete.php', 'laravel-make-softdelete');
+
+        dump(config('laravel-make-softdelete.model.namespace'));
+
         foreach ($this->devCommands as $concrete => $abstract) {
+            dump($abstract);
             if (class_exists($concrete) && is_subclass_of($concrete, GeneratorCommand::class)) {
                 $this->registerGeneratorCommand($concrete, $abstract);
 
-                return null;
+                continue;
             }
 
             $method = "register" . class_basename($concrete);
@@ -75,7 +85,7 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
             if (method_exists($this, $method)) {
                 call_user_func_array([$this, $method], [$abstract]);
 
-                return null;
+                continue;
             }
 
             throw new \BadMethodCallException('Call to undefined method ' . $concrete . '::' . $method . '()');

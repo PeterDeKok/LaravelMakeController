@@ -21,10 +21,18 @@
  */
 
 return [
-    'controller' => [
-        'DummyStringInTheStub1' => 'ReplacedWithThisString',
-        'DummyStringInTheStub2' => function (string $name) {
-            return 'ReplacedWithReturnValueOfCallback' . $name;
-        },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default model directory
+    |--------------------------------------------------------------------------
+    |
+    | The root namespace of all models.
+    |
+    */
+
+    'model' => [
+        'namespace' => null,
     ],
+
 ];
