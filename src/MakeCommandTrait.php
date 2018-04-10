@@ -28,6 +28,13 @@ use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 trait MakeCommandTrait {
 
     /**
+     * The name of the class being generated.
+     *
+     * @var string
+     */
+    protected $className;
+
+    /**
      * @return void
      */
     protected function bootMakeCommandTrait () {
@@ -85,20 +92,21 @@ trait MakeCommandTrait {
      * @return string
      */
     protected function buildClass ($name) {
-        $replace = $this->getReplacements($name);
+        $this->className = $name;
 
-        return str_replace(
-            array_keys($replace), array_values($replace), parent::buildClass($name)
-        );
+        $buildClass = parent::buildClass($name);
+
+        $replace = $this->getReplacements();
+
+        return str_replace(array_keys($replace), array_values($replace), $buildClass);
     }
 
     /**
-     * @param string $name
      * @return array
      */
-    protected function getReplacements (string $name) {
+    protected function getReplacements () {
         $defaultNamespace = $this->getDefaultNamespace(trim($this->rootNamespace(), '\\'));
-        $relativeNamespace = str_replace($defaultNamespace, '', $this->getNamespace($name));
+        $relativeNamespace = str_replace($defaultNamespace, '', $this->getNamespace($this->className));
 
         $replace = [];
 
@@ -113,14 +121,14 @@ trait MakeCommandTrait {
         $replace["DummyTypeBaseClass"] = $this->type;
         $replace["\n\n\n"] = "\n\n";
 
-        return $this->mergeCustomReplacements($name, $replace);
+        return $this->mergeCustomReplacements($replace);
     }
 
     /**
      * @param array $replace
      * @return array
      */
-    protected function mergeCustomReplacements (string $name, array $replace = []) {
+    protected function mergeCustomReplacements (array $replace = []) {
         $customReplacementFile = resource_path('peterdekok/laravel-make-softdelete/replacements.php');
 
         if (!file_exists($customReplacementFile)) {
@@ -143,12 +151,24 @@ trait MakeCommandTrait {
 
         foreach ($customReplace[strtolower($this->type)] as $dummy => $with) {
             if (is_callable($with))
-                $with = call_user_func_array($with, [$name]);
+                $with = call_user_func_array($with, [$this->getReplacementArguments()]);
 
             $replace[$dummy] = (string) $with;
         }
 
         return $replace;
+    }
+
+    /**
+     * Get the arguments to send to the custom replacement callbacks.
+     *
+     * @return array
+     */
+    protected function getReplacementArguments () {
+        return [
+            'options' => $this->options(),
+            'className' => $this->className,
+        ];
     }
 
     /**

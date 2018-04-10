@@ -24,6 +24,7 @@ namespace PeterDeKok\LaravelMakeSoftDelete;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Console\ModelMakeCommand as _ModelMakeCommand;
+use Illuminate\Support\Str;
 
 class ModelMakeCommand extends _ModelMakeCommand {
 
@@ -51,6 +52,54 @@ class ModelMakeCommand extends _ModelMakeCommand {
             $this->type = 'Pivot';
 
         parent::handle();
+    }
+
+    /**
+     * Create a model factory for the model.
+     *
+     * @return void
+     */
+    protected function createFactory()
+    {
+        $this->call('make:factory', [
+            'name' => $this->argument('name').'Factory',
+            '--model' => $this->argument('name'),
+            '--softdelete' => $this->option('softdelete'),
+        ]);
+    }
+
+    /**
+     * Create a migration file for the model.
+     *
+     * @return void
+     */
+    protected function createMigration()
+    {
+        $table = Str::plural(Str::snake(class_basename($this->argument('name'))));
+
+        $this->call('make:migration', [
+            'name' => "create_{$table}_table",
+            '--create' => $table,
+            '--softdelete' => $this->option('softdelete'),
+        ]);
+    }
+
+    /**
+     * Create a controller for the model.
+     *
+     * @return void
+     */
+    protected function createController()
+    {
+        $controller = Str::studly(class_basename($this->argument('name')));
+
+        $modelName = $this->qualifyClass($this->getNameInput());
+
+        $this->call('make:controller', [
+            'name' => "{$controller}Controller",
+            '--model' => $this->option('resource') ? $modelName : null,
+            '--softdelete' => $this->option('softdelete'),
+        ]);
     }
 
     /**

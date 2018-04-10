@@ -41,6 +41,8 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
     protected $devCommands = [
         ControllerMakeCommand::class => 'command.controller.make',
         ModelMakeCommand::class      => 'command.model.make',
+        FactoryMakeCommand::class    => 'command.factory.make',
+        MigrateMakeCommand::class    => 'command.migrate.make',
     ];
 
     /**
@@ -58,7 +60,7 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
         ], 'stubs');
 
         $this->publishes([
-            __DIR__ . '/../replacements.php' => resource_path('peterdekok/laravel-make-softdelete/replacements.php'),
+            __DIR__ . '/../resources/replacements.php' => resource_path('peterdekok/laravel-make-softdelete/replacements.php'),
         ], 'replacements');
     }
 
@@ -70,10 +72,7 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
     public function register () {
         $this->mergeConfigFrom(__DIR__.'/../config/laravel-make-softdelete.php', 'laravel-make-softdelete');
 
-        dump(config('laravel-make-softdelete.model.namespace'));
-
         foreach ($this->devCommands as $concrete => $abstract) {
-            dump($abstract);
             if (class_exists($concrete) && is_subclass_of($concrete, GeneratorCommand::class)) {
                 $this->registerGeneratorCommand($concrete, $abstract);
 
@@ -102,6 +101,20 @@ class MakeSoftDeleteServiceProvider extends ServiceProvider {
     protected function registerGeneratorCommand ($concrete, $abstract) {
         $this->app->extend($abstract, function ($original, $app) use ($concrete) {
             return new $concrete($app['files']);
+        });
+    }
+
+    /**
+     * Replaces the original Generator command.
+     *
+     * @param string $abstract
+     * @return void
+     */
+    protected function registerMigrateMakeCommand ($abstract) {
+        $this->app->extend($abstract, function ($original, $app) {
+            $creator = new MigrationCreator($app['files']);
+
+            return new MigrateMakeCommand($creator, $app['composer']);
         });
     }
 

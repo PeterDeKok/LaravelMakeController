@@ -35,9 +35,10 @@ class ControllerMakeCommand extends _ControllerMakeCommand {
      * Create a new controller creator command instance.
      *
      * @param  \Illuminate\Filesystem\Filesystem $files
+     *
      * @return void
      */
-    public function __construct (Filesystem $files) {
+    public function __construct(Filesystem $files) {
         $this->bootMakeCommandTrait();
 
         parent::__construct($files);
@@ -48,33 +49,53 @@ class ControllerMakeCommand extends _ControllerMakeCommand {
      *
      * @return array
      */
-    protected function buildParentReplacements()
-    {
+    protected function buildParentReplacements() {
         $parentModelClass = $this->parseModel($this->option('parent'));
 
-        dump($parentModelClass);
-
-        if (! class_exists($parentModelClass)) {
+        if (!class_exists($parentModelClass)) {
             if ($this->confirm("A {$parentModelClass} model does not exist. Do you want to generate it?", true)) {
-                $this->call('make:model', ['name' => $parentModelClass, 'softdelete' => $this->option('softdelete')]);
+                $this->call('make:model', ['name' => $parentModelClass, '--softdelete' => $this->option('softdelete')]);
             }
         }
 
         return [
             'ParentDummyFullModelClass' => $parentModelClass,
-            'ParentDummyModelClass' => class_basename($parentModelClass),
-            'ParentDummyModelVariable' => lcfirst(class_basename($parentModelClass)),
+            'ParentDummyModelClass'     => class_basename($parentModelClass),
+            'ParentDummyModelVariable'  => lcfirst(class_basename($parentModelClass)),
         ];
+    }
+
+    /**
+     * Build the model replacement values.
+     *
+     * @param  array $replace
+     *
+     * @return array
+     */
+    protected function buildModelReplacements(array $replace) {
+        $modelClass = $this->parseModel($this->option('model'));
+
+        if (!class_exists($modelClass)) {
+            if ($this->confirm("A {$modelClass} model does not exist. Do you want to generate it?", true)) {
+                $this->call('make:model', ['name' => $modelClass, '--softdelete' => $this->option('softdelete')]);
+            }
+        }
+
+        return array_merge($replace, [
+            'DummyFullModelClass' => $modelClass,
+            'DummyModelClass'     => class_basename($modelClass),
+            'DummyModelVariable'  => lcfirst(class_basename($modelClass)),
+        ]);
     }
 
     /**
      * Get the fully-qualified model class name.
      *
-     * @param  string  $model
+     * @param  string $model
+     *
      * @return string
      */
-    protected function parseModel($model)
-    {
+    protected function parseModel($model) {
         if (preg_match('([^A-Za-z0-9_/\\\\])', $model)) {
             throw new InvalidArgumentException('Model name contains invalid characters.');
         }
@@ -85,13 +106,27 @@ class ControllerMakeCommand extends _ControllerMakeCommand {
             return $model;
 
         if (is_null($configNamespace = config('laravel-make-softdelete.model.namespace')))
-            return $rootNamespace.$model;
+            return $rootNamespace . $model;
 
         $configNamespace = trim(str_replace('/', '\\', $configNamespace), '\\') . '\\';
 
         if (Str::startsWith($model, $configNamespace))
             return $model;
 
-        return $configNamespace.$model;
+        return $configNamespace . $model;
+    }
+
+    /**
+     * Get the arguments to send to the custom replacement callbacks.
+     *
+     * @return array
+     */
+    protected function getReplacementArguments() {
+        return [
+            'options'   => $this->options(),
+            'className' => $this->className,
+            'parent'    => $this->option('parent') ? $this->parseModel($this->option('parent')) : null,
+            'model'     => $this->option('model') ? $this->parseModel($this->option('model')) : null,
+        ];
     }
 }
